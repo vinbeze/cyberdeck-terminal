@@ -1,0 +1,23 @@
+#!/bin/bash
+# Banner exibido ao abrir um terminal.
+# Desative com: export CYBERDECK_BANNER=0
+
+[[ ${CYBERDECK_BANNER:-1} == 0 ]] && exit 0
+[[ -t 1 ]] || exit 0
+
+DIM='\033[38;2;74;77;85m'
+AMBER='\033[1;38;2;255;176;0m'
+TEAL='\033[38;2;0;200;180m'
+OFF='\033[0m'
+
+shell_name="${SHELL##*/}"
+shell_ver="${BASH_VERSION:-${ZSH_VERSION:-?}}"
+shell_ver="${shell_ver%%(*}"
+cols="${COLUMNS:-$(tput cols 2>/dev/null || echo 80)}"
+rows="${LINES:-$(tput lines 2>/dev/null || echo 24)}"
+now="$(date '+%Y-%m-%d %H:%M')"
+
+printf '%b\n' \
+  "${DIM}▌${OFF} ${AMBER}CYBERDECK${OFF} ${DIM}//${OFF} ${TEAL}${USER}@${HOSTNAME%%.*}${OFF}" \
+  "${DIM}▌${OFF} ${DIM}${shell_name} ${shell_ver} · ${now} · ${cols}x${rows}${OFF}" \
+  "${DIM}▌${OFF}"
