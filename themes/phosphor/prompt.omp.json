@@ -34,16 +34,10 @@
           }
         },
         {
-          "type": "text",
-          "style": "plain",
-          "foreground": "p:overlay",
-          "template": " ]─[ "
-        },
-        {
           "type": "git",
           "style": "plain",
           "foreground": "p:secondary",
-          "template": "{{ .HEAD }}{{ if .Working.Changed }} {{ .Working.String }}{{ end }}",
+          "template": "{{ if .Ref }}<p:overlay> ]─[ </>{{ .HEAD }}{{ if .Working.Changed }} {{ .Working.String }}{{ end }}{{ end }}",
           "properties": {
             "branch_icon": " ",
             "fetch_status": true,

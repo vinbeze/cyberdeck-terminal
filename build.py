@@ -37,9 +37,9 @@ def prompt(name, c):
                 seg("text", "overlay", "┌─[ "),
                 seg("path", "primary", "{{ .Path }}", style="folder", max_depth=2,
                     folder_separator_icon="/", home_icon="~"),
-                seg("text", "overlay", " ]─[ "),
+                # A moldura " ]─[ " fica dentro do segmento git: fora de um repo ela some.
                 seg("git", "secondary",
-                    "{{ .HEAD }}{{ if .Working.Changed }} {{ .Working.String }}{{ end }}",
+                    "{{ if .Ref }}<p:overlay> ]─[ </>{{ .HEAD }}{{ if .Working.Changed }} {{ .Working.String }}{{ end }}{{ end }}",
                     branch_icon=" ", fetch_status=True, fetch_stash_count=True),
                 seg("text", "overlay", " ]"),
                 seg("status", "red", " [ ✘ {{ .Code }} ]"),
