@@ -3,6 +3,13 @@
   "version": 3,
   "final_space": true,
   "console_title_template": "{{ .Folder }} :: {{ .Shell }}",
+  "palette": {
+    "overlay": "#36553f",
+    "muted": "#66866f",
+    "primary": "#39ff7a",
+    "secondary": "#ffb000",
+    "red": "#ff4d5e"
+  },
   "blocks": [
     {
       "type": "prompt",
@@ -11,13 +18,13 @@
         {
           "type": "text",
           "style": "plain",
-          "foreground": "#4a4d55",
+          "foreground": "p:overlay",
           "template": "┌─[ "
         },
         {
           "type": "path",
           "style": "plain",
-          "foreground": "#ffb000",
+          "foreground": "p:primary",
           "template": "{{ .Path }}",
           "properties": {
             "style": "folder",
@@ -29,16 +36,16 @@
         {
           "type": "text",
           "style": "plain",
-          "foreground": "#4a4d55",
+          "foreground": "p:overlay",
           "template": " ]─[ "
         },
         {
           "type": "git",
           "style": "plain",
-          "foreground": "#00c8b4",
+          "foreground": "p:secondary",
           "template": "{{ .HEAD }}{{ if .Working.Changed }} {{ .Working.String }}{{ end }}",
           "properties": {
-            "branch_icon": "",
+            "branch_icon": " ",
             "fetch_status": true,
             "fetch_stash_count": true
           }
@@ -46,19 +53,19 @@
         {
           "type": "text",
           "style": "plain",
-          "foreground": "#4a4d55",
+          "foreground": "p:overlay",
           "template": " ]"
         },
         {
           "type": "status",
           "style": "plain",
-          "foreground": "#ff2e4d",
-          "template": " [ {{ .String }} ]"
+          "foreground": "p:red",
+          "template": " [ ✘ {{ .Code }} ]"
         },
         {
           "type": "executiontime",
           "style": "plain",
-          "foreground": "#4a4d55",
+          "foreground": "p:muted",
           "template": " [ {{ .FormattedMs }} ]",
           "properties": {
             "threshold": 500
@@ -67,7 +74,7 @@
         {
           "type": "go",
           "style": "plain",
-          "foreground": "#4a4d55",
+          "foreground": "p:muted",
           "template": " [ go {{ .Full }} ]",
           "properties": {
             "fetch_version": true
@@ -76,7 +83,7 @@
         {
           "type": "node",
           "style": "plain",
-          "foreground": "#4a4d55",
+          "foreground": "p:muted",
           "template": " [ node {{ .Full }} ]",
           "properties": {
             "fetch_version": true
@@ -85,7 +92,7 @@
         {
           "type": "python",
           "style": "plain",
-          "foreground": "#4a4d55",
+          "foreground": "p:muted",
           "template": " [ py {{ .Full }} ]",
           "properties": {
             "fetch_version": true
@@ -100,7 +107,7 @@
         {
           "type": "time",
           "style": "plain",
-          "foreground": "#4a4d55",
+          "foreground": "p:muted",
           "template": "{{ .CurrentDate | date .Format }} ",
           "properties": {
             "time_format": "15:04"
@@ -116,11 +123,11 @@
         {
           "type": "text",
           "style": "plain",
-          "foreground": "#ff2e4d",
+          "foreground": "p:red",
+          "template": "<b>└─╼</b> ",
           "foreground_templates": [
-            "{{ if eq .Code 0 }}#ffb000{{ end }}"
-          ],
-          "template": "<b>└─╼</b> "
+            "{{ if eq .Code 0 }}p:primary{{ end }}"
+          ]
         }
       ]
     }

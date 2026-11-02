@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Troca o flavor do Cyberdeck: cyberdeck-flavor [amber|phosphor|synth|daylight]
+# Sem argumento, lista os flavors e marca o ativo.
+set -euo pipefail
+
+DIR="${CYBERDECK_DIR:-$HOME/.config/cyberdeck}"
+CUR="$DIR/current"
+active="$(cat "$CUR/name" 2>/dev/null || echo -)"
+
+if (( $# == 0 )); then
+  for d in "$DIR"/themes/*/; do
+    n="$(basename "$d")"
+    [[ $n == "$active" ]] && echo "* $n" || echo "  $n"
+  done
+  exit 0
+fi
+
+name="$1"
+src="$DIR/themes/$name"
+[[ -d $src ]] || { echo "flavor desconhecido: $name (rode 'cyberdeck-flavor' para listar)" >&2; exit 1; }
+
+mkdir -p "$CUR"
+for f in prompt.omp.json ghostty.conf tmux.conf flavor.sh; do
+  ln -sfn "$src/$f" "$CUR/$f"
+done
+echo "$name" > "$CUR/name"
+
+# tmux recarrega na hora, se estiver rodando
+if command -v tmux &>/dev/null && tmux info &>/dev/null; then
+  tmux source-file "$CUR/tmux.conf"
+fi
+
+echo "Cyberdeck: flavor '$name' ativo."
+echo "  ghostty: Ctrl+Shift+, para recarregar · prompt: abra um shell novo (ou exec \$SHELL)"

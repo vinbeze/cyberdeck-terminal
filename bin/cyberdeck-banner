@@ -5,9 +5,16 @@
 [[ ${CYBERDECK_BANNER:-1} == 0 ]] && exit 0
 [[ -t 1 ]] || exit 0
 
-DIM='\033[38;2;74;77;85m'
-AMBER='\033[1;38;2;255;176;0m'
-TEAL='\033[38;2;0;200;180m'
+# Cores do flavor ativo (padrão: amber)
+CD_PRIMARY='255;176;0' CD_SECONDARY='0;200;180' CD_OVERLAY='74;77;88' CD_MUTED='125;128;142'
+CYBERDECK_FLAVOR=amber
+f="${CYBERDECK_DIR:-$HOME/.config/cyberdeck}/current/flavor.sh"
+[[ -r $f ]] && source "$f"
+
+FRAME="\033[38;2;${CD_OVERLAY}m"
+DIM="\033[38;2;${CD_MUTED}m"
+ACCENT="\033[1;38;2;${CD_PRIMARY}m"
+SECOND="\033[38;2;${CD_SECONDARY}m"
 OFF='\033[0m'
 
 shell_name="${SHELL##*/}"
@@ -18,6 +25,6 @@ rows="${LINES:-$(tput lines 2>/dev/null || echo 24)}"
 now="$(date '+%Y-%m-%d %H:%M')"
 
 printf '%b\n' \
-  "${DIM}▌${OFF} ${AMBER}CYBERDECK${OFF} ${DIM}//${OFF} ${TEAL}${USER}@${HOSTNAME%%.*}${OFF}" \
-  "${DIM}▌${OFF} ${DIM}${shell_name} ${shell_ver} · ${now} · ${cols}x${rows}${OFF}" \
-  "${DIM}▌${OFF}"
+  "${FRAME}▌${OFF} ${ACCENT}CYBERDECK${OFF} ${FRAME}//${OFF} ${SECOND}${USER}@${HOSTNAME%%.*}${OFF} ${DIM}· ${CYBERDECK_FLAVOR}${OFF}" \
+  "${FRAME}▌${OFF} ${DIM}${shell_name} ${shell_ver} · ${now} · ${cols}x${rows}${OFF}" \
+  "${FRAME}▌${OFF}"
