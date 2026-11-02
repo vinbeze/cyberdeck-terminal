@@ -24,7 +24,46 @@ add_once() {
   echo "configurado: $1"
 }
 
+# strip_block <arquivo> <bloco>: remove a primeira ocorrência exata de um bloco
+# (usado para migrar quem instalou a versão antiga, que gravava outras linhas).
+strip_block() {
+  local file=$1 block=$2 tmp
+  [[ -f $file ]] || return 0
+  tmp="$(mktemp)"
+  if awk 'NR==FNR { b[++n]=$0; next } { a[++m]=$0 }
+    END {
+      for (i=1; i<=m; i++) {
+        hit = (i+n-1 <= m)
+        for (j=1; hit && j<=n; j++) if (a[i+j-1] != b[j]) hit=0
+        if (hit) { i += n-1; removed=1; continue }
+        print a[i]
+      }
+      exit (removed ? 0 : 1)
+    }' <(printf '%s\n' "$block") "$file" > "$tmp"; then
+    cat "$tmp" > "$file"
+    echo "migrado: $1 (bloco antigo removido)"
+  fi
+  rm -f "$tmp"
+}
+
+# Bloco gravado pela versão anterior do install.sh (marcador: cyberpunk.omp.json).
+LEGACY_BASH='# Banner de "boot" do terminal (desative com CYBERDECK_BANNER=0)
+command -v cyberdeck-banner &>/dev/null && cyberdeck-banner
+
+# Prompt: oh-my-posh (tema Cyberpunk), no lugar do Starship que o Omarchy carrega.
+if command -v oh-my-posh &>/dev/null; then
+  unset PROMPT_COMMAND
+  eval "$(oh-my-posh init bash --config "$HOME/.config/oh-my-posh/cyberpunk.omp.json")"
+fi'
+
+LEGACY_ZSH='# Banner de "boot" do terminal (desative com CYBERDECK_BANNER=0)
+command -v cyberdeck-banner &>/dev/null && cyberdeck-banner'
+
 PROMPT='$HOME/.config/cyberdeck/current/prompt.omp.json'
+for rc in ~/.bashrc ~/.zshrc; do
+  strip_block "$rc" "$LEGACY_BASH"
+  strip_block "$rc" "$LEGACY_ZSH"
+done
 add_once ~/.bashrc "cyberdeck/current/prompt" "# Cyberdeck
 command -v cyberdeck-banner &>/dev/null && cyberdeck-banner
 if command -v oh-my-posh &>/dev/null; then

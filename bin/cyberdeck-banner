@@ -17,9 +17,13 @@ ACCENT="\033[1;38;2;${CD_PRIMARY}m"
 SECOND="\033[38;2;${CD_SECONDARY}m"
 OFF='\033[0m'
 
-shell_name="${SHELL##*/}"
-shell_ver="${BASH_VERSION:-${ZSH_VERSION:-?}}"
-shell_ver="${shell_ver%%(*}"
+# O banner roda como script bash: $BASH_VERSION é sempre a versão do bash e
+# $SHELL é o shell de login, então o shell de verdade é o processo pai.
+shell_name="$(ps -o comm= -p "$PPID" 2>/dev/null)"
+shell_name="${shell_name#-}"
+[[ -n $shell_name ]] || shell_name="${SHELL##*/}"
+shell_ver="$("$shell_name" --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)"
+[[ -n $shell_ver ]] || shell_ver="${BASH_VERSION%%(*}"
 cols="${COLUMNS:-$(tput cols 2>/dev/null || echo 80)}"
 rows="${LINES:-$(tput lines 2>/dev/null || echo 24)}"
 now="$(date '+%Y-%m-%d %H:%M')"
