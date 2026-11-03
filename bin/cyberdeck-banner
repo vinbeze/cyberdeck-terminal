@@ -27,8 +27,62 @@ shell_ver="$("$shell_name" --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-
 cols="${COLUMNS:-$(tput cols 2>/dev/null || echo 80)}"
 rows="${LINES:-$(tput lines 2>/dev/null || echo 24)}"
 now="$(date '+%Y-%m-%d %H:%M')"
+who="${FRAME}▌${OFF} ${SECOND}${USER}@${HOSTNAME%%.*}${OFF} ${DIM}· ${CYBERDECK_FLAVOR}${OFF}"
 
-printf '%b\n' \
-  "${FRAME}▌${OFF} ${ACCENT}CYBERDECK${OFF} ${FRAME}//${OFF} ${SECOND}${USER}@${HOSTNAME%%.*}${OFF} ${DIM}· ${CYBERDECK_FLAVOR}${OFF}" \
-  "${FRAME}▌${OFF} ${DIM}${shell_name} ${shell_ver} · ${now} · ${cols}x${rows}${OFF}" \
-  "${FRAME}▌${OFF}"
+# Linha de máquina (opcional): kernel · uptime · ram · disco · bateria · ip · load
+# Desligada por padrão; ligue com CYBERDECK_SYSINFO=1.
+machine=""
+if [[ ${CYBERDECK_SYSINFO:-0} != 0 ]]; then
+  read -r up_s _ < /proc/uptime
+  up_s=${up_s%.*}
+  if (( up_s >= 86400 )); then
+    up_fmt="$((up_s / 86400))d$((up_s % 86400 / 3600))h"
+  elif (( up_s >= 3600 )); then
+    up_fmt="$((up_s / 3600))h$((up_s % 3600 / 60))m"
+  else
+    up_fmt="$((up_s / 60))m"
+  fi
+  read -r load_1 _ < /proc/loadavg
+  read -r ram_used ram_total < <(awk '/MemTotal/ {t=$2} /MemAvailable/ {a=$2} END {printf "%.1f %.1f", (t-a)/1048576, t/1048576}' /proc/meminfo)
+  disk="$(df -P / 2>/dev/null | awk 'NR==2 {print $5}')"
+  bat=""
+  for f in /sys/class/power_supply/BAT*/capacity; do
+    [[ -r $f ]] && { bat="bat $(<"$f")%"; break; }
+  done
+  ip_addr="$(ip -4 -o addr show scope global 2>/dev/null | awk '{print $4; exit}' | cut -d/ -f1)"
+
+  # Só entra o que couber na largura do terminal (2 = "▌ ").
+  for part in "$(uname -r)" "up $up_fmt" "ram ${ram_used}/${ram_total}G" "/ $disk" "$bat" "$ip_addr" "load $load_1"; do
+    [[ -n $part ]] || continue
+    next="${machine:+$machine · }$part"
+    (( ${#next} + 2 <= cols )) && machine=$next
+  done
+fi
+
+# Letras grandes (figlet ansi_shadow); em terminal estreito cai no cabeçalho
+# compacto. CYBERDECK_ASCII=0 força o compacto.
+art_width=73
+if [[ ${CYBERDECK_ASCII:-1} != 0 ]] && (( cols >= art_width )); then
+  # Metade de cima na cor secundária, metade de baixo na primária.
+  n=0
+  while IFS= read -r line; do
+    (( n++ < 3 )) && c="\033[1;38;2;${CD_SECONDARY}m" || c=$ACCENT
+    printf '%b%s%b\n' "$c" "$line" "$OFF"
+  done <<'ART'
+ ██████╗██╗   ██╗██████╗ ███████╗██████╗ ██████╗ ███████╗ ██████╗██╗  ██╗
+██╔════╝╚██╗ ██╔╝██╔══██╗██╔════╝██╔══██╗██╔══██╗██╔════╝██╔════╝██║ ██╔╝
+██║      ╚████╔╝ ██████╔╝█████╗  ██████╔╝██║  ██║█████╗  ██║     █████╔╝
+██║       ╚██╔╝  ██╔══██╗██╔══╝  ██╔══██╗██║  ██║██╔══╝  ██║     ██╔═██╗
+╚██████╗   ██║   ██████╔╝███████╗██║  ██║██████╔╝███████╗╚██████╗██║  ██╗
+ ╚═════╝   ╚═╝   ╚═════╝ ╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝ ╚═════╝╚═╝  ╚═╝
+ART
+  echo
+else
+  who="${FRAME}▌${OFF} ${ACCENT}CYBERDECK${OFF} ${FRAME}//${OFF} ${SECOND}${USER}@${HOSTNAME%%.*}${OFF} ${DIM}· ${CYBERDECK_FLAVOR}${OFF}"
+fi
+
+out=( "$who"
+      "${FRAME}▌${OFF} ${DIM}${shell_name} ${shell_ver} · ${now} · ${cols}x${rows}${OFF}" )
+[[ -n $machine ]] && out+=( "${FRAME}▌${OFF} ${DIM}${machine}${OFF}" )
+out+=( "${FRAME}▌${OFF}" )
+printf '%b\n' "${out[@]}"

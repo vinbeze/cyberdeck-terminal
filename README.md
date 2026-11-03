@@ -36,7 +36,12 @@ cyberdeck-flavor phosphor   # troca
 ```
 
 O tmux recarrega na hora. No ghostty, `Ctrl+Shift+,` recarrega a config; o prompt muda num shell novo.
-O banner pode ser desligado com `CYBERDECK_BANNER=0`.
+O banner pode ser desligado com `CYBERDECK_BANNER=0`. As letras grandes são
+desenhadas em ASCII; com menos de 73 colunas (ou `CYBERDECK_ASCII=0`) o banner
+usa o cabeçalho compacto.
+`CYBERDECK_SYSINFO=1` acrescenta uma linha com
+kernel, uptime, RAM, disco, bateria, IP e load — só o que couber na largura
+(desligada por padrão).
 
 ## Estrutura
 
